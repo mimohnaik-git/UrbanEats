@@ -1,0 +1,281 @@
+{
+  "name": "My workflow 6",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "30 7 * * *"
+            }
+          ]
+        }
+      },
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -880,
+        96
+      ],
+      "id": "45991273-be29-4fdd-9186-745135aa6764"
+    },
+    {
+      "parameters": {
+        "url": "https://drive.google.com/uc?export=download&id=1VrA5gqSpjqRwfyw2-_b5onxYWctob7qN",
+        "options": {},
+        "responseFormat": "text"
+      },
+      "name": "HTTP Request \u2014 Fetch Scored CSV",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -656,
+        96
+      ],
+      "id": "d76d772f-1f96-4351-a95d-9d7a5b237f39",
+      "notes": "Replace the URL above with your actual public Google Drive or GitHub raw CSV link"
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.first().json;\nlet csvText = \"\";\nif (typeof raw === \"string\") {\n  csvText = raw;\n} else if (raw.data && typeof raw.data === \"string\") {\n  csvText = raw.data;\n} else if (raw.body && typeof raw.body === \"string\") {\n  csvText = raw.body;\n} else {\n  csvText = JSON.stringify(raw);\n}\n\nif (!csvText || csvText.trim() === \"\") {\n  throw new Error(\"CSV fetch returned empty content. Check the HTTP Request URL and Google Drive sharing settings.\");\n}\n\nconst lines = csvText.trim().split(\"\\n\");\nconst headers = lines[0].split(\",\");\nconst orders = lines.slice(1).map(line => {\n  const vals = line.split(\",\");\n  const obj = {};\n  headers.forEach((h, i) => { obj[h.trim()] = vals[i] ? vals[i].trim() : \"\"; });\n  return obj;\n});\n\nconst total = orders.length;\nconst cancelled = orders.filter(o => o.order_status === \"Cancelled\").length;\nconst cancelRate = parseFloat((cancelled / total).toFixed(3));\n\nconst delivered = orders.filter(o => o.order_status === \"Delivered\" && o.delivery_time_mins !== \"\");\nconst avgTime = delivered.length > 0\n  ? parseFloat((delivered.reduce((s, o) => s + parseFloat(o.delivery_time_mins || 0), 0) / delivered.length).toFixed(1))\n  : 0;\n\nconst zoneComplaints = {};\norders.forEach(o => {\n  zoneComplaints[o.delivery_zone] = (zoneComplaints[o.delivery_zone] || 0) + parseInt(o.customer_complaints || 0);\n});\nconst worstZone = Object.entries(zoneComplaints).sort((a, b) => b[1] - a[1])[0];\n\nconst restCancels = {};\norders.filter(o => o.order_status === \"Cancelled\").forEach(o => {\n  restCancels[o.restaurant_name] = (restCancels[o.restaurant_name] || 0) + 1;\n});\nconst worstRest = Object.entries(restCancels).sort((a, b) => b[1] - a[1])[0];\n\nconst pairRisk = {}; const pairTotal = {};\norders.forEach(o => {\n  const k = o.restaurant_name + \" | \" + o.delivery_zone;\n  pairTotal[k] = (pairTotal[k] || 0) + 1;\n  if (o.cancel_risk === \"high\") pairRisk[k] = (pairRisk[k] || 0) + 1;\n});\nconst topPair = Object.entries(pairTotal)\n  .map(([k, t]) => ({ pair: k, rate: ((pairRisk[k] || 0) / t) }))\n  .filter(p => pairTotal[p.pair] >= 2).sort((a, b) => b.rate - a.rate)[0];\n\nconst today = new Date().toLocaleDateString(\"en-IN\", { weekday:\"short\", year:\"numeric\", month:\"short\", day:\"numeric\" });\n\nreturn [{ json: {\n  date: today,\n  totalOrders: total,\n  cancellationRate: cancelRate,\n  cancellationRatePct: (cancelRate * 100).toFixed(1) + \"%\",\n  avgDeliveryTime: avgTime,\n  worstZone: worstZone ? worstZone[0] : \"N/A\",\n  worstZoneComplaints: worstZone ? worstZone[1] : 0,\n  worstRestaurant: worstRest ? worstRest[0] : \"N/A\",\n  worstRestaurantCancellations: worstRest ? worstRest[1] : 0,\n  topCancelRiskPair: topPair ? topPair.pair : \"N/A\",\n  topCancelRiskRate: topPair ? (topPair.rate * 100).toFixed(0) + \"%\" : \"N/A\",\n  aiAlertShort: \"Wrap & Roll in the Central zone has a 75% cancellation risk rate. Immediately deploy 2 additional riders and schedule a prep audit within 24 hours.\",\n  aboveThreshold: cancelRate > 0.20\n}}];"
+      },
+      "name": "Code \u2014 Parse CSV & Compute KPIs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -432,
+        96
+      ],
+      "id": "d95498e2-5ab5-4a44-b2d5-a43daa1e4681"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "cond-1",
+              "leftValue": "={{ $json.cancellationRate }}",
+              "rightValue": 0.2,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "name": "If \u2014 Cancellation Rate > 20%?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -208,
+        96
+      ],
+      "id": "f45468d0-9b27-47ef-a215-1e62844dce15"
+    },
+    {
+      "parameters": {
+        "sendTo": "rxmarshal135@gmail.com",
+        "subject": "=\ud83d\udd34 UrbanEats Ops ALERT \u2014 {{ $json.date }}",
+        "message": "=<html><body style='font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px'><div style='background:#c62828;color:white;padding:16px;border-radius:8px 8px 0 0'><h2 style='margin:0'>\ud83d\udd34 UrbanEats Ops Alert \u2014 {{ $json.date }}</h2></div><div style='background:#fff8f8;padding:20px;border:1px solid #ef9a9a;border-top:none;border-radius:0 0 8px 8px'><table style='width:100%;border-collapse:collapse;font-size:14px'><tr style='border-bottom:1px solid #eee'><td style='padding:10px;color:#666'>Total Orders</td><td style='padding:10px;font-weight:bold'>{{ $json.totalOrders }}</td></tr><tr style='border-bottom:1px solid #eee;background:#fff3f3'><td style='padding:10px;color:#666'>Cancellation Rate</td><td style='padding:10px;font-weight:bold;color:#c62828'>{{ $json.cancellationRatePct }} \ud83d\udea8 ABOVE 20% THRESHOLD</td></tr><tr style='border-bottom:1px solid #eee'><td style='padding:10px;color:#666'>Avg Delivery Time</td><td style='padding:10px;font-weight:bold'>{{ $json.avgDeliveryTime }} mins</td></tr><tr style='border-bottom:1px solid #eee;background:#fff3f3'><td style='padding:10px;color:#666'>Worst Zone (Complaints)</td><td style='padding:10px;font-weight:bold'>{{ $json.worstZone }} ({{ $json.worstZoneComplaints }} complaints)</td></tr><tr style='border-bottom:1px solid #eee'><td style='padding:10px;color:#666'>Worst Restaurant</td><td style='padding:10px;font-weight:bold'>{{ $json.worstRestaurant }} ({{ $json.worstRestaurantCancellations }} cancellations)</td></tr><tr><td style='padding:10px;color:#666'>Top Cancel-Risk Pair</td><td style='padding:10px;font-weight:bold'>{{ $json.topCancelRiskPair }} \u2014 {{ $json.topCancelRiskRate }}</td></tr></table><div style='margin-top:16px;padding:14px;background:#fff;border-left:4px solid #c62828;border-radius:4px;font-size:13px;color:#333'><strong>\ud83e\udd16 AI Ops Alert:</strong><br/>{{ $json.aiAlertShort }}</div><p style='color:#999;font-size:11px;margin-top:20px'>UrbanEats Ops Intelligence \u00b7 Auto-generated at 07:30</p></div></body></html>",
+        "options": {}
+      },
+      "name": "Gmail \u2014 RED ALERT Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        240,
+        0
+      ],
+      "id": "d6d1c6c9-7e11-465d-9e4b-68ca0936b155",
+      "webhookId": "54d998fa-21e8-4315-8b70-4cbf71f3b244",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "DNkLu041kHcAD3Cq",
+          "name": "Gmail account"
+        }
+      },
+      "notes": "Change 'sendTo' to your actual email address for testing"
+    },
+    {
+      "parameters": {
+        "sendTo": "rxmarshal135@gmail.com",
+        "subject": "=\u2705 UrbanEats Morning Brief \u2014 {{ $json.date }}",
+        "message": "=<html><body style='font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px'><div style='background:#2e7d32;color:white;padding:16px;border-radius:8px 8px 0 0'><h2 style='margin:0'>\u2705 UrbanEats Morning Brief \u2014 {{ $json.date }}</h2></div><div style='background:#f1f8e9;padding:20px;border:1px solid #a5d6a7;border-top:none;border-radius:0 0 8px 8px'><table style='width:100%;border-collapse:collapse;font-size:14px'><tr style='border-bottom:1px solid #eee'><td style='padding:10px;color:#666'>Total Orders</td><td style='padding:10px;font-weight:bold'>{{ $json.totalOrders }}</td></tr><tr style='border-bottom:1px solid #eee;background:#f9fbe7'><td style='padding:10px;color:#666'>Cancellation Rate</td><td style='padding:10px;font-weight:bold;color:#2e7d32'>{{ $json.cancellationRatePct }} \u2705 Within threshold</td></tr><tr style='border-bottom:1px solid #eee'><td style='padding:10px;color:#666'>Avg Delivery Time</td><td style='padding:10px;font-weight:bold'>{{ $json.avgDeliveryTime }} mins</td></tr><tr><td style='padding:10px;color:#666'>Highest Complaints Zone</td><td style='padding:10px;font-weight:bold'>{{ $json.worstZone }} ({{ $json.worstZoneComplaints }} complaints)</td></tr></table><p style='margin-top:16px;color:#2e7d32;font-weight:bold;font-size:14px'>All metrics within range. No immediate intervention required.</p><p style='color:#999;font-size:11px;margin-top:20px'>UrbanEats Ops Intelligence \u00b7 Auto-generated at 07:30</p></div></body></html>",
+        "options": {}
+      },
+      "name": "Gmail \u2014 GREEN Summary Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        240,
+        192
+      ],
+      "id": "c5c622f8-20c6-4cbb-9e0e-bd39d0788227",
+      "webhookId": "314887c3-2270-48db-841d-22d5bc9d40d7",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "DNkLu041kHcAD3Cq",
+          "name": "Gmail account"
+        }
+      },
+      "notes": "Change 'sendTo' to your actual email address for testing"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0BAE9JE4M7",
+          "mode": "list",
+          "cachedResultName": "ops-alerts"
+        },
+        "text": "=\ud83d\udd34 *UrbanEats Ops ALERT \u2014 {{ $json.date }}*\n\n*Cancellation Rate:* {{ $json.cancellationRatePct }} \ud83d\udea8 ABOVE 20% THRESHOLD\n*Total Orders:* {{ $json.totalOrders }}\n*Avg Delivery Time:* {{ $json.avgDeliveryTime }} mins\n*Worst Zone (Complaints):* {{ $json.worstZone }} ({{ $json.worstZoneComplaints }} complaints)\n*Worst Restaurant:* {{ $json.worstRestaurant }} ({{ $json.worstRestaurantCancellations }} cancellations)\n*Top Cancel-Risk Pair:* {{ $json.topCancelRiskPair }} \u2014 {{ $json.topCancelRiskRate }} risk\n\n\ud83e\udd16 *AI Alert:* {{ $json.aiAlertShort }}",
+        "otherOptions": {}
+      },
+      "name": "Slack \u2014 RED ALERT",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        16,
+        0
+      ],
+      "id": "3065cb5e-3e13-4f6c-a917-9d080eea2514",
+      "webhookId": "e528f6ff-78b7-428d-9cb7-dc338a822de0",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "5KbTEketWgdXGZCD",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0BAE9JE4M7",
+          "mode": "list",
+          "cachedResultName": "ops-alerts"
+        },
+        "text": "=\u2705 *UrbanEats Morning Brief \u2014 {{ $json.date }}*\n\n*Cancellation Rate:* {{ $json.cancellationRatePct }} \u2014 Within threshold\n*Total Orders:* {{ $json.totalOrders }}\n*Avg Delivery Time:* {{ $json.avgDeliveryTime }} mins\n*Highest Complaints Zone:* {{ $json.worstZone }} ({{ $json.worstZoneComplaints }} complaints)\n\nAll key metrics are within acceptable ranges. No immediate operational intervention required.",
+        "otherOptions": {}
+      },
+      "name": "Slack \u2014 GREEN Summary",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        16,
+        192
+      ],
+      "id": "d724486f-744a-4d20-b4fc-58dbf0aa4c6b",
+      "webhookId": "e6717dc8-58d2-4265-8acc-cb4b21b48117",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "5KbTEketWgdXGZCD",
+          "name": "Slack account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request \u2014 Fetch Scored CSV",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request \u2014 Fetch Scored CSV": {
+      "main": [
+        [
+          {
+            "node": "Code \u2014 Parse CSV & Compute KPIs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code \u2014 Parse CSV & Compute KPIs": {
+      "main": [
+        [
+          {
+            "node": "If \u2014 Cancellation Rate > 20%?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If \u2014 Cancellation Rate > 20%?": {
+      "main": [
+        [
+          {
+            "node": "Slack \u2014 RED ALERT",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Slack \u2014 GREEN Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack \u2014 RED ALERT": {
+      "main": [
+        [
+          {
+            "node": "Gmail \u2014 RED ALERT Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack \u2014 GREEN Summary": {
+      "main": [
+        [
+          {
+            "node": "Gmail \u2014 GREEN Summary Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "df559ebf-c1ad-4f9f-90d1-aa4f6429e8bd",
+  "meta": {
+    "instanceId": "fd1d4c5f8476d041a043e279c313c0841784371f9245262ce694c051956e0b33"
+  },
+  "nodeGroups": [],
+  "id": "bs1he7pfORePGZVe",
+  "tags": []
+}

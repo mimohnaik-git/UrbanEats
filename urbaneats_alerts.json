@@ -1,0 +1,128 @@
+{
+  "top_hotspot": {
+    "restaurant_name": "Wrap & Roll",
+    "delivery_zone": "Central",
+    "high_risk_rate": 0.75,
+    "avg_delivery_time": 53.5,
+    "alert_text": "\"Wrap & Roll in Central Zone has a high cancellation risk rate of 75.0%, indicating a significant issue with order fulfillment. We recommend that the regional manager implement a quality control check on orders from Wrap & Roll to ensure that all orders are accurately prepared and dispatched within the expected timeframe.\""
+  },
+  "all_hotspots": [
+    {
+      "restaurant_name": "Wrap & Roll",
+      "delivery_zone": "Central",
+      "high_risk_rate": 0.75,
+      "avg_order_value": 818.2,
+      "avg_delivery_time": 53.5,
+      "total_orders": 4,
+      "alert_text": "\"Wrap & Roll in Central Zone has a high cancellation risk rate of 75.0%, indicating a significant issue with order fulfillment. We recommend that the regional manager implement a quality control check on orders from Wrap & Roll to ensure that all orders are accurately prepared and dispatched within the expected timeframe.\""
+    },
+    {
+      "restaurant_name": "Burger Hub",
+      "delivery_zone": "Central",
+      "high_risk_rate": 0.7,
+      "avg_order_value": 1196.3,
+      "avg_delivery_time": 67.3,
+      "total_orders": 10,
+      "alert_text": "**Ops Alert: Burger Hub (Central) - High Cancellation Risk Rate**\n\nBurger Hub in the Central delivery zone has a high cancellation risk rate of 70.0%, indicating a significant issue that requires immediate attention. We recommend that the regional manager conduct an on-site audit at Burger Hub to assess their order management processes and provide training to their staff on effective communication and order fulfillment strategies to reduce cancellations."
+    },
+    {
+      "restaurant_name": "Wrap & Roll",
+      "delivery_zone": "West",
+      "high_risk_rate": 0.6,
+      "avg_order_value": 595.4,
+      "avg_delivery_time": 63.6,
+      "total_orders": 5,
+      "alert_text": "Alert: Wrap & Roll in the West delivery zone has a high cancellation risk rate of 60.0%. We recommend that the regional manager conduct an on-site audit at Wrap & Roll to assess and improve their order management processes to reduce cancellations."
+    },
+    {
+      "restaurant_name": "Spice Garden",
+      "delivery_zone": "West",
+      "high_risk_rate": 0.571,
+      "avg_order_value": 1093.7,
+      "avg_delivery_time": 58.0,
+      "total_orders": 7,
+      "alert_text": "\"Spice Garden in the West delivery zone has a high cancellation risk rate of 57.1%. Implement a quality control check on all orders from Spice Garden in the West to ensure accurate order fulfillment and reduce cancellations.\""
+    },
+    {
+      "restaurant_name": "Pizza Palace",
+      "delivery_zone": "Central",
+      "high_risk_rate": 0.5,
+      "avg_order_value": 1258.0,
+      "avg_delivery_time": 60.0,
+      "total_orders": 2,
+      "alert_text": "\"Alert: Pizza Palace in Central Zone has a high cancellation risk rate of 50.0%. Immediately implement a 'Confirm Order' protocol with drivers to ensure all orders are verified with customers before starting delivery to mitigate cancellations.\""
+    },
+    {
+      "restaurant_name": "Spice Garden",
+      "delivery_zone": "Central",
+      "high_risk_rate": 0.5,
+      "avg_order_value": 861.0,
+      "avg_delivery_time": 41.2,
+      "total_orders": 4,
+      "alert_text": "Alert: Spice Garden in Central zone has a high cancellation risk rate of 50.0%. Immediately review and adjust the menu pricing for Spice Garden to better align with the average order value of \u20b9861.0 to mitigate cancellations and improve delivery efficiency."
+    },
+    {
+      "restaurant_name": "Wrap & Roll",
+      "delivery_zone": "East",
+      "high_risk_rate": 0.5,
+      "avg_order_value": 1063.5,
+      "avg_delivery_time": 64.6,
+      "total_orders": 4,
+      "alert_text": "Alert: Wrap & Roll in the East delivery zone has a high cancellation risk rate of 50.0%. Immediately schedule a meeting with the Wrap & Roll team to review their order fulfillment process and implement strategies to reduce cancellations, starting with a review of their menu offerings and inventory management."
+    },
+    {
+      "restaurant_name": "Sushi Bay",
+      "delivery_zone": "Central",
+      "high_risk_rate": 0.444,
+      "avg_order_value": 770.9,
+      "avg_delivery_time": 40.4,
+      "total_orders": 9,
+      "alert_text": "**Ops Alert: Sushi Bay in Central Zone Experiencing High Cancellation Risk**\n\nSushi Bay in the Central delivery zone has a cancellation risk rate of 44.4%, indicating a need for immediate attention. We recommend that the regional manager conduct a site visit to Sushi Bay to discuss and implement a revised menu and pricing strategy to align with customer expectations and reduce cancellations."
+    },
+    {
+      "restaurant_name": "Wrap & Roll",
+      "delivery_zone": "North",
+      "high_risk_rate": 0.444,
+      "avg_order_value": 615.4,
+      "avg_delivery_time": 56.9,
+      "total_orders": 9,
+      "alert_text": "Alert: Wrap & Roll in the North delivery zone has a high cancellation risk rate of 44.4%. We recommend that the regional manager increase communication with Wrap & Roll to ensure they are aware of and are actively addressing the root causes of cancellations, starting with a meeting to discuss their current processes and implement corrective actions."
+    },
+    {
+      "restaurant_name": "Sushi Bay",
+      "delivery_zone": "East",
+      "high_risk_rate": 0.429,
+      "avg_order_value": 978.7,
+      "avg_delivery_time": 52.3,
+      "total_orders": 7,
+      "alert_text": "Alert: Sushi Bay in the East Delivery Zone has a high cancellation risk rate of 42.9%. Implement a proactive communication strategy with customers, including automated reminders and estimated delivery time updates, to reduce cancellations and improve the overall delivery experience."
+    },
+    {
+      "restaurant_name": "Spice Garden",
+      "delivery_zone": "South",
+      "high_risk_rate": 0.375,
+      "avg_order_value": 757.4,
+      "avg_delivery_time": 48.0,
+      "total_orders": 8,
+      "alert_text": "\"Spice Garden in the South delivery zone has a high cancellation risk rate of 37.5%. We recommend that you conduct a site visit to Spice Garden to assess their operations and provide coaching on improving order fulfillment and reducing wait times to mitigate cancellations.\""
+    },
+    {
+      "restaurant_name": "Spice Garden",
+      "delivery_zone": "North",
+      "high_risk_rate": 0.333,
+      "avg_order_value": 1217.5,
+      "avg_delivery_time": 56.8,
+      "total_orders": 6,
+      "alert_text": "Alert: Spice Garden in the North delivery zone has a high cancellation risk rate of 33.3%. We recommend that you implement a proactive communication strategy with the restaurant to review their menu offerings and pricing to better align with customer expectations and reduce cancellations."
+    },
+    {
+      "restaurant_name": "Sushi Bay",
+      "delivery_zone": "North",
+      "high_risk_rate": 0.333,
+      "avg_order_value": 986.7,
+      "avg_delivery_time": 55.2,
+      "total_orders": 6,
+      "alert_text": "Ops Alert: Sushi Bay in the North Delivery Zone has a high cancellation risk rate of 33.3%. Immediately review and adjust the estimated delivery times for Sushi Bay to ensure they are accurately reflected in the system, considering the current average delivery time of 55.2 minutes, to minimize cancellations."
+    }
+  ]
+}
